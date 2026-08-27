@@ -13,3 +13,4 @@ Cómo se corre
 
 Requisitos:
 Python 3.9 instalado. Revisar dependencias necesarias: pandas, matplotlib, seaborn, plotly, numpy, scipy
+Archivos encounters.csv, observations.csv y patients.csv del repositorio de synthea: https://synthea.mitre.org/downloads
