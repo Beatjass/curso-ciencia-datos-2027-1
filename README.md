@@ -1,2 +1,1 @@
-Repositorio del laboratorio 03: EDA
-Archivos read.md y requeridos para el laboratorio están en labs/s3
+Repositorio para los laboratorios del curso de ciencia de datos (2027-1)
