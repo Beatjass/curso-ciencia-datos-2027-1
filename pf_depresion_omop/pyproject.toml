@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pf_depresion_omop"
+version = "0.1.0"
+description = "Pipeline ETL para mapear egresos hospitalarios por depresión a OMOP CDM"
+requires-python = ">=3.0"
+dependencies = [
+    "polars>=0.20.0",
+    "pytest>=7.0",
+    "ruff>=0.3.5",
+    "pre-commit"
+]
+
+[project.optional-dependencies]
+dev = [
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "C4", "UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

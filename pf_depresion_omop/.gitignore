@@ -1,0 +1,8 @@
+#Entornos virtuales
+labs_env/
+venv/
+__pycache__/
+
+#Datos crudos y procesados
+data/
+*.txt
