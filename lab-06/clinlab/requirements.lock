@@ -68,3 +68,4 @@ typing-extensions==4.16.0
     # via mypy
 virtualenv==21.14.11
     # via pre-commit
+urllib3==2.2.1

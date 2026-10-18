@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: clinlab
+Version: 0.1.0
+Summary: Análisis de pacientes de Synthea convertido en paquete
+Requires-Python: >=3.0
+Requires-Dist: pandas
+Requires-Dist: pytest
+Requires-Dist: pytest-cov
+Requires-Dist: ruff
+Requires-Dist: mypy
+Requires-Dist: pre-commit
+Provides-Extra: dev
+Requires-Dist: hypothesis; extra == "dev"
+Requires-Dist: pandera; extra == "dev"

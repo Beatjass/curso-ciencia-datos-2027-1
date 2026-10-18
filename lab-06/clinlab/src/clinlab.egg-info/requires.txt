@@ -1,0 +1,10 @@
+pandas
+pytest
+pytest-cov
+ruff
+mypy
+pre-commit
+
+[dev]
+hypothesis
+pandera

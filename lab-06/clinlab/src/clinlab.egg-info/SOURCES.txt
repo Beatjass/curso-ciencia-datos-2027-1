@@ -1,0 +1,8 @@
+pyproject.toml
+src/funciones.py
+src/clinlab/__init__.py
+src/clinlab.egg-info/PKG-INFO
+src/clinlab.egg-info/SOURCES.txt
+src/clinlab.egg-info/dependency_links.txt
+src/clinlab.egg-info/requires.txt
+src/clinlab.egg-info/top_level.txt
