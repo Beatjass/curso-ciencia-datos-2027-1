@@ -13,7 +13,17 @@ RUN pip install --no-cache-dir -r requirements.lock
 FROM python:3.12-alpine
 WORKDIR /app
 
+#Actividad 6
+RUN adduser -D clinuser && chown -R clinuser:clinuser /app
+
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY . /app/
+COPY --chown=clinuser:clinuser . /app/
+
+#Actividad 9
+RUN pip install --no-cache-dir .
+
+USER clinuser
+
+CMD ["pytest"]
