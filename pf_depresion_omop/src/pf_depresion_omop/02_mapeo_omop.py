@@ -64,16 +64,47 @@ def tabla_visit_occurrence(df_limpio: pl.DataFrame) -> pl.DataFrame:
     return visit
 
 
-if __name__ == "__main__":
-    # df de prueba con las variables requeridas para ambas tablas
-    df_prueba = pl.DataFrame(
-        {"SEXO": [1, 2, 2], "EDAD1": [35, 42, 18], "MES": [1, 5, 12], "DIAS_ESTA": [5, 14, 2]}
+# Tabla condition_occurrence
+def tabla_condition_occurrence(df_limpio: pl.DataFrame) -> pl.DataFrame:
+    """Genera la tabla condition_occurrence con los diagnósticos de OMOP-CDM."""
+    condition = (
+        df_limpio.with_columns(
+            [
+                pl.int_range(1, pl.len() + 1).alias("person_id"),
+                pl.date(2024, pl.col("MES"), 28).alias("visit_end_date"),
+            ]
+        )
+        .with_columns(
+            [
+                (pl.col("visit_end_date") - pl.duration(days=pl.col("DIAS_ESTA"))).alias(
+                    "condition_start_date"
+                )
+            ]
+        )
+        .select(
+            [
+                pl.int_range(1, pl.len() + 1).alias("condition_occurrence_id"),
+                pl.col("person_id"),
+                pl.lit(0).alias("condition_concept_id"),
+                pl.col("condition_start_date"),
+                pl.lit(32020).alias("condition_type_concept_id"),
+                pl.col("AFECPRIN4").cast(pl.Utf8).alias("condition_source_value"),
+            ]
+        )
     )
 
-    df_person = tabla_person(df_prueba)
-    df_visit = tabla_visit_occurrence(df_prueba)
+    return condition
 
-    print("Vista previa de Person:")
-    print(df_person)
-    print("\nVista previa de visit occurrence:")
-    print(df_visit)
+
+if __name__ == "__main__":
+    df_raw = pl.read_csv("data/Egresos_Sectorial_2024.txt", separator="|")
+
+    df_person = tabla_person(df_raw)
+    df_visit = tabla_visit_occurrence(df_raw)
+    df_condition = tabla_condition_occurrence(df_raw)
+
+    df_person.write_parquet("data/person.parquet")
+    df_visit.write_parquet("data/visit_occurrence.parquet")
+    df_condition.write_parquet("data/condition_occurrence.parquet")
+
+    print("Tablas OMOP guardadas exitosamente en la carpeta data/")
