@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: beatjass
+      POSTGRES_PASSWORD: clinlab07
+      POSTGRES_DB: clindb
+    ports:
+      - "5432:5432" #Se agrego para la actividad 2
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080" #Puerto host:puerto_contenedor
+    depends_on:
+      - db
+
+  jupyter:
+    image: jupyter/scipy-notebook
+    ports:
+      - "8888:8888"
+    depends_on:
+      - db
