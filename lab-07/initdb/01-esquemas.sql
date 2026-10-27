@@ -1,0 +1,2 @@
+CREATE SCHEMA cdm;
+CREATE SCHEMA results;

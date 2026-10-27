@@ -7,6 +7,14 @@ services:
       POSTGRES_DB: clindb
     ports:
       - "5432:5432" #Se agrego para la actividad 2
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beatjass -d clindb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   adminer:
     image: adminer
@@ -19,5 +27,11 @@ services:
     image: jupyter/scipy-notebook
     ports:
       - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
