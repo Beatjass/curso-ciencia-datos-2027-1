@@ -2,31 +2,35 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: beatjass
-      POSTGRES_PASSWORD: clinlab07
-      POSTGRES_DB: clindb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} "Falta la contraseña en el archivo .env}"
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432" #Se agrego para la actividad 2
+      - "${DB_PORT}:5432" #Se agrego para la actividad 2
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U beatjass -d clindb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   adminer:
     image: adminer
+    profiles: ["actividad7"]
     ports:
-      - "8080:8080" #Puerto host:puerto_contenedor
+      - "${ADMINER_PORT}:8080" #Puerto host:puerto_contenedor
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   jupyter:
     image: jupyter/scipy-notebook
+    environment:
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN}
     ports:
-      - "8888:8888"
+      - "${JUPYTER_PORT}:8888"
     volumes:
       - ./notebooks:/home/jovyan/work
     depends_on:
