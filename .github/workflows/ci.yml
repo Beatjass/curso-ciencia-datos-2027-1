@@ -1,10 +1,20 @@
-name: Pipeline CI
+name: Pipeline CI - Depresión OMOP
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'pf_depresion_omop/**'
+  pull_request:
+    paths:
+      - 'pf_depresion_omop/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pf_depresion_omop
+
     steps:
     - uses: actions/checkout@v3
     
@@ -18,7 +28,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install polars pytest ruff
         
-    - name: Validar formato con ruff
+    - name: Validar formato con Ruff
       run: ruff format --check .
       
     - name: Ejecutar pruebas con Pytest
