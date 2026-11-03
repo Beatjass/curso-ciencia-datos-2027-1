@@ -41,5 +41,11 @@
   * Menor volumen de ingresos: Enero (683) y Diciembre (778).
 * **Conclusión:** La carga hospitalaria por episodios depresivos severos no se distribuye uniformemente, presentando concentraciones críticas hacia mediados de la primavera y mediados del otoño.
 
-## Siguientes pasos (pendiente)
-* Analizar los desenlaces clínicos mediante la variable de motivo de egreso para identificar patrones en altas, traslados o defunciones según género, edad y diagnóstico (F32 vs. F33).
+##Fase 5: Análisis de desenlaces clínicos (motivos de egreso)
+**Objetivo:** Evaluar las trayectorias de salida del internamiento psiquiátrico estandarizando la variable `MOTIVO_EGRESO` hacia el campo `discharge_to_source_value` del modelo OMOP.
+* **Metodología:** Reestructuración del pipeline ETL para integrar el motivo de egreso en `visit_occurrence.parquet` y decodificación de las claves numéricas de la DGIS mediante diccionarios de Polars.
+* **Resultados:** 
+  * El 87.2% de los internamientos (9,305 pacientes) lograron la estabilización aguda (mejoría).
+  * Se registró un volumen importante de abandonos prematuros: 719 altas voluntarias y 17 fugas.
+  * Otros desenlaces incluyeron 167 traslados, 37 casos catalogados como curación y 4 defunciones.
+* **Conclusión:** En cuantoa hospitalización aguda, el sistema hospitalario es efectivo para la estabilización (mejoría), pero el volumen de altas voluntarias representa un área de oportunidad para investigar la adherencia al tratamiento.

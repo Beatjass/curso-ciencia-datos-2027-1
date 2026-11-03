@@ -57,6 +57,7 @@ def tabla_visit_occurrence(df_limpio: pl.DataFrame) -> pl.DataFrame:
                 pl.col("visit_end_date"),
                 pl.lit(32009).alias("visit_type_concept_id"),  # 32009 = EHR encounter record
                 pl.col("DIAS_ESTA").cast(pl.Utf8).alias("visit_source_value"),
+                pl.col("MOTIVO_EGRESO").cast(pl.Utf8).alias("discharge_to_source_value"),
             ]
         )
     )
