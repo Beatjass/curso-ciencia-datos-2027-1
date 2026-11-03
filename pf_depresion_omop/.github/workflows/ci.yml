@@ -1,0 +1,25 @@
+name: Pipeline CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.14'
+        
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install polars pytest ruff
+        
+    - name: Validar formato con ruff
+      run: ruff format --check .
+      
+    - name: Ejecutar pruebas con Pytest
+      run: pytest tests/
