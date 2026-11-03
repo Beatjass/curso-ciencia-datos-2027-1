@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  omop_db:
+    image: postgres:15
+    container_name: pf_depresion_omop_postgres
+    environment:
+      POSTGRES_USER: admin_dep_omop
+      POSTGRES_PASSWORD: proyecto_final_26
+      POSTGRES_DB: omop_cdm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
