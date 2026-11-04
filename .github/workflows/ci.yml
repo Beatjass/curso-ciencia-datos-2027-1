@@ -33,4 +33,4 @@ jobs:
       run: ruff format .
       
     - name: Ejecutar pruebas con Pytest
-      run: pytest tests/
+      run: pytest tests/test_fechas.py

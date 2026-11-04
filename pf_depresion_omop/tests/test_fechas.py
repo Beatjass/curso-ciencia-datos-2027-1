@@ -13,7 +13,13 @@ spec.loader.exec_module(mapeo)
 def test_fechas_logicas():
     # Preparar datos con casos límite (incluyendo 0 días de estancia)
     df_prueba = pl.DataFrame(
-        {"SEXO": [1, 2], "EDAD1": [35, 42], "MES": [1, 12], "DIAS_ESTA": [5, 0]}
+        {
+            "SEXO": [1, 2],
+            "EDAD1": [35, 42],
+            "MES": [1, 12],
+            "DIAS_ESTA": [5, 0],
+            "MOTIVO_EGRESO": [1, 1],
+        }
     )
 
     # Ejecutar transformación
