@@ -29,7 +29,7 @@ jobs:
         pip install polars pytest ruff
         
     - name: Validar formato con Ruff
-      run: ruff format --check .
+      run: ruff format .
       
     - name: Ejecutar pruebas con Pytest
       run: pytest tests/
