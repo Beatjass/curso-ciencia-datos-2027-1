@@ -49,3 +49,22 @@
   * Se registró un volumen importante de abandonos prematuros: 719 altas voluntarias y 17 fugas.
   * Otros desenlaces incluyeron 167 traslados, 37 casos catalogados como curación y 4 defunciones.
 * **Conclusión:** En cuantoa hospitalización aguda, el sistema hospitalario es efectivo para la estabilización (mejoría), pero el volumen de altas voluntarias representa un área de oportunidad para investigar la adherencia al tratamiento.
+
+##Fase 7: Infraestructura de Producción e Integración Continua (CI/CD)
+**Objetivo:** Preparar el entorno relacional para el almacenamiento definitivo de la cohorte clínica y automatizar la validación de calidad del código.
+* **Metodología:** 
+  * Diseño de un flujo de trabajo en GitHub Actions (`ci.yml`) para ejecutar validaciones de formato (Ruff) y pruebas de calidad de datos (Pytest) en cada *push*.
+  * Implementación de pruebas unitarias sobre los archivos `.parquet` para garantizar la integridad lógica de las fechas y llaves del estándar OMOP.
+  * Containerización del motor de base de datos PostgreSQL 15 mediante Docker Compose.
+* **Resultados:** Contenedor local `pf_omop_postgres` operando correctamente en el puerto 5432 y repositorio blindado con validación CI/CD remota.
+* **Conclusión:** La arquitectura de backend se encuentra lista para iniciar la ingesta masiva de los registros clínicos F32 y F33 hacia las tablas relacionales.
+
+##Fase 8 (pendiente): Ingesta de Datos a Base de Datos Relacional
+**Objetivo:** Cargar las tablas estandarizadas (`person`, `visit_occurrence`, `condition_occurrence`) desde los archivos Parquet hacia el motor relacional del contenedor PostgreSQL (`pf_omop_postgres`).
+* **Estado Actual:** 
+  * Entorno de infraestructura containerizada activo (Docker Compose).
+  * Pruebas de calidad y validación CI/CD configuradas y operativas en el repositorio.
+* **Siguientes Pasos (Pendiente):**
+  * Desarrollo del script automatizado `10_carga_postgres.py`.
+  * Establecimiento de la conexión con PostgreSQL.
+  * Volcado e inserción de los datos procesados.

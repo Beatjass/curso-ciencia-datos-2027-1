@@ -6,10 +6,9 @@ def test_calidad_fechas_visita():
     df_visit = pl.read_parquet("data/visit_occurrence.parquet")
 
     fechas_invalidas = df_visit.filter(pl.col("visit_end_date") < pl.col("visit_start_date"))
-    assert fechas_invalidas.is_empty(), (
-        f"Error: Se encontraron {fechas_invalidas.height} registros "
-        "con fechas temporales ilógicas."
-    )
+    assert (
+        fechas_invalidas.is_empty()
+    ), f"Error: Se encontraron {fechas_invalidas.height} registros con fechas temporales ilógicas."
 
 
 def test_valores_nulos_criticos():

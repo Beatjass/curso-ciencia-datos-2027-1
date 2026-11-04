@@ -53,8 +53,7 @@ print(
     f"{total_limpio:,} | - {excluidos_limpio:,} |"
 )
 print(
-    f"| Final | Cohorte para mapeo OMOP | {total_limpio:,} | "
-    f"Retención: {retencion_porcentaje}% |"
+    f"| Final | Cohorte para mapeo OMOP | {total_limpio:,} | Retención: {retencion_porcentaje}% |"
 )
 
 contenido_md = (

@@ -22,6 +22,6 @@ def test_fechas_logicas():
     # Aserción: El inicio nunca debe ser mayor al fin temporal
     fechas_invalidas = df_visit.filter(pl.col("visit_start_date") > pl.col("visit_end_date"))
 
-    assert len(fechas_invalidas) == 0, (
-        f"Error: Se generaron {len(fechas_invalidas)} " "registros con fechas ilógicas."
-    )
+    assert (
+        len(fechas_invalidas) == 0
+    ), f"Error: Se generaron {len(fechas_invalidas)} registros con fechas ilógicas."
