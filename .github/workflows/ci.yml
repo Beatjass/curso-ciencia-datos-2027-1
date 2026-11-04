@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'pf_depresion_omop/**'
+      - '.github/workflows/**'
   pull_request:
     paths:
       - 'pf_depresion_omop/**'
