@@ -59,12 +59,16 @@
 * **Resultados:** Contenedor local `pf_omop_postgres` operando correctamente en el puerto 5432 y repositorio blindado con validación CI/CD remota.
 * **Conclusión:** La arquitectura de backend se encuentra lista para iniciar la ingesta masiva de los registros clínicos F32 y F33 hacia las tablas relacionales.
 
-##Fase 8 (pendiente): Ingesta de Datos a Base de Datos Relacional
+##Fase 8: Ingesta de datos a base de datos relacional
 **Objetivo:** Cargar las tablas estandarizadas (`person`, `visit_occurrence`, `condition_occurrence`) desde los archivos Parquet hacia el motor relacional del contenedor PostgreSQL (`pf_omop_postgres`).
-* **Estado Actual:** 
+- **Estado actual:** 
   * Entorno de infraestructura containerizada activo (Docker Compose).
   * Pruebas de calidad y validación CI/CD configuradas y operativas en el repositorio.
-* **Siguientes Pasos (Pendiente):**
-  * Desarrollo del script automatizado `10_carga_postgres.py`.
-  * Establecimiento de la conexión con PostgreSQL.
-  * Volcado e inserción de los datos procesados.
+  * Script automatizado de carga (`09_carga_postgres.py`) desarrollado y ejecutado con éxito.
+  * Conexión establecida con PostgreSQL (`omop_cdm`).
+  * Volcado masivo completado: 5,877,537 registros insertados correctamente en cada tabla.
+  
+  
+##Siguientes Pasos:
+  * Iniciar la analítica longitudinal utilizando SQL avanzado (CTEs, Window Functions y Subqueries).
+  * Responder preguntas temporales sobre historias clínicas estandarizadas (intervalos entre eventos, readmisiones y episodios de tratamiento).
