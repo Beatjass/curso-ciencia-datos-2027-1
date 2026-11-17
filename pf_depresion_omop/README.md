@@ -41,8 +41,20 @@ Requisitos previos:
 - Docker instalado en el sistema local.
 
 Paso 1: Configurar el entorno virtual e instalar dependencias
-git clone https://github.com/tu-usuario/pf_depresion_omop.git
+Clonar únicamente la carpeta del proyecto
+git clone --filter=blob:none --no-checkout --depth 1 https://github.com/Beatjass/curso-ciencia-datos-2027-1.git
+cd curso-ciencia-datos-2027-1
+git sparse-checkout set pf_depresion_omop
+git checkout main
+
+Entrar a la carpeta del proyecto (donde está el pyproject.toml)
 cd pf_depresion_omop
+
+Crear y activar el entorno virtual
+python3 -m venv .venv
+source .venv/bin/activate  #En Windows: .venv\Scripts\activate
+
+Instalar el proyecto en modo editable y sus dependencias
 pip install -e .
 
 Paso 2: Levantar la infraestructura en Docker
