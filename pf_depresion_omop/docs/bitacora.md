@@ -1,7 +1,7 @@
-#Bitácora de análisis clínico: Depresión en OMOP CDM con los registros de DGIS 2024.
+#Bitácora de análisis clínico: Depresión en OMOP CDM con los registros de Egresos Sectorial 2024 de la Secretaría de Salud.
 
 ##Fase 1: Estandarización y depuración de cohorte
-**Objetivo:** Transformar los registros crudos de la DGIS 2024 al modelo OMOP y aislar una cohorte clínicamente válida para episodios depresivos (F32, F33).
+**Objetivo:** Transformar los registros crudos de Egresos Sectorial 2024 al modelo OMOP y aislar una cohorte clínicamente válida para episodios depresivos (F32, F33).
 * **Mapeo ETL:** Se procesó el archivo fuente `Egresos_Sectorial_2024.txt` utilizando Polars. Se generaron y almacenaron en formato parquet las tablas `person`, `visit_occurrence` y `condition_occurrence`.
 * **Filtros de calidad:** A partir de 10,972 registros iniciales, se aplicaron dos criterios de exclusión para eliminar sesgos:
   1. Edades biológicamente irreales (>120 años, derivados del código "999").
@@ -68,7 +68,23 @@
   * Conexión establecida con PostgreSQL (`omop_cdm`).
   * Volcado masivo completado: 5,877,537 registros insertados correctamente en cada tabla.
   
-  
-##Siguientes Pasos:
-  * Iniciar la analítica longitudinal utilizando SQL avanzado (CTEs, Window Functions y Subqueries).
-  * Responder preguntas temporales sobre historias clínicas estandarizadas (intervalos entre eventos, readmisiones y episodios de tratamiento).
+##Fase 9: Administración visual y caracterización SQL de la cohorte
+**Objetivo:** Incorporar una interfaz de administración visual para el servidor PostgreSQL y ejecutar consultas analíticas estructuradas sobre el modelo OMOP CDM para caracterizar la cohorte de depresión (F32 y F33).
+- **Metodología:**
+  - Integración de **PgAdmin 4** en `docker-compose.yml` (puerto 5050) conectado al servidor `OMOP CDM Local` (`omop_cdm`), habilitando el monitoreo de transacciones en tiempo real y la consulta directa de esquemas.
+  - Desarrollo y ejecución del script `10_cohorte_depresion.sql` mediante expresiones de tabla común (CTE), vinculando `person`, `visit_occurrence` y `condition_occurrence` con filtros de plausibilidad clínica (estancias de 0 a 365 días).
+- **Resultados:**
+  - Extracción de una matriz analítica consolidada de 26 subcategorías diagnósticas segmentadas por género (conceptos OMOP `8532` femenino y `8507` masculino).
+  - Confirmación del predominio de episodios graves en población femenina: `F32.2` (n = 2,007; mediana = 6 días; edad promedio = 31.2 años) y `F33.2` (n = 1,553; mediana = 7 días; edad promedio = 33.8 años).
+  - Identificación de un patrón etario diferenciado en códigos inespecíficos (`F32.9` con edad promedio de 59.7 años y `F33.9` con 71.9 años en mujeres), evidenciando menor especificidad diagnóstica en población geriátrica.
+- **Conclusión:** El ecosistema relacional opera de manera estable y permite extraer indicadores epidemiológicos y hospitalarios directamente mediante consultas estandarizadas en SQL.
+
+##Fase 10: Auditoría metodológica, reproducibilidad y consolidación
+**Objetivo:** Documentar las limitaciones estructurales de los datos abiertos, optimizar la reproducibilidad de instalación del proyecto y consolidar la documentación académica y técnica final.
+- **Limitaciones metodológicas identificadas:**
+  1. *Enfoque transversal:* Debido a los protocolos estrictos de anonimización en la fuente original, cada egreso genera un `person_id` único por evento, impidiendo el seguimiento longitudinal de reingresos de un mismo individuo.
+  2. *Errores de captura administrativa:* Se detectaron anomalías tipográficas en fechas de alta (estancias calculadas >60 años), controladas mediante filtros explícitos de validación temporal en SQL.
+- **Reproducibilidad y entrega:**
+  - Actualización de `README.md` incorporando descarga selectiva mediante `git sparse-checkout` para clonar únicamente la carpeta `pf_depresion_omop`, creación de entorno virtual e instalación editable (`pip install -e .`).
+  - Consolidación del reporte técnico final (`pf_dep_omop.docx`) con matrices de atrición, inventario de scripts (`01` a `10`), visualizaciones EDA y evidencias de calidad de software (`pytest` y GitHub Actions en verde).
+- **Estado final:** Proyecto concluido, auditado y versionado en la rama `main`.
