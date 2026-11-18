@@ -69,13 +69,47 @@ pip install -e .
 
 ### Paso 2: Levantar la infraestructura en Docker
 
+Este proyecto utiliza Docker Compose para orquestar PostgreSQL (con el modelo OMOP CDM) y PgAdmin4.
+
+Configuración de variables de entorno
+Crea un archivo `.env` en la raíz del proyecto basándote en la plantilla `.env.example`:
+```bash
+cp .env.example .env
+```
+
+Ejecución de Contenedores
+
+Levanta los servicios en segundo plano:
+
 ```bash
 docker compose up -d
 ```
 
 El motor de PostgreSQL estará disponible en el puerto `5432` y PgAdmin4 en `http://localhost:5050`.
 
-## Paso 3: Ejecutar el Pipeline ETL (Scripts 01 al 09)
+### Paso 3: Configuración del servidor en PgAdmin 4
+
+Una vez que los contenedores estén activos, abre tu navegador e ingresa a:
+http://localhost:5050/browser/
+
+Inicia sesión con el correo y contraseña definidos en tu archivo .env. Para registrar y visualizar la base de datos de la cohorte, añade un nuevo servidor con los siguientes parámetros:
+
+Agregar nuevo servidor
+
+```bash
+    Pestaña General:
+        Name: OMOP CDM PostgreSQL
+
+    Pestaña Connection:
+        Host name/address: (el valor que le quieras asignar)
+        Port: 5432
+        Maintenance database: omop_cdm
+        Username: (el valor de tu POSTGRES_USER)
+        Password: (la contraseña definida en tu POSTGRES_PASSWORD)
+```
+
+
+### Paso 4: Ejecutar el Pipeline ETL (Scripts 01 al 09)
 Ejecuta secuencialmente los scripts de procesamiento y carga:
 
 ```bash
