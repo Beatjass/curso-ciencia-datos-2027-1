@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import polars as pl
 
 
@@ -30,10 +31,27 @@ def analizar_estacionalidad():
 
     df_mensual = df_cohorte.group_by("mes").len().sort("mes")
 
-    print("--- Estacionalidad: Ingresos Hospitalarios Mensuales (2024) ---")
+    print("Estacionalidad: ingresos hospitalarios mensuales (2024)")
     with pl.Config(tbl_rows=12):
         print(df_mensual)
 
+
+meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+conteos = [683, 805, 836, 1007, 1047, 943, 921, 861, 876, 1067, 847, 778]
+
+plt.figure(figsize=(10, 4.5))
+plt.plot(meses, conteos, marker="o", linewidth=2.2, color="#1f4e78")
+plt.fill_between(meses, conteos, color="#1f4e78", alpha=0.1)
+for i, v in enumerate(conteos):
+    plt.text(i, v + 18, str(v), ha="center", fontsize=9)
+
+plt.title("Estacionalidad de ingresos hospitalarios por depresión (F32/F33) - 2024")
+plt.xlabel("Mes de ingreso (visit_start_date)")
+plt.ylabel("Número de egresos")
+plt.ylim(600, 1150)
+plt.grid(axis="y", linestyle="--", alpha=0.5)
+plt.tight_layout()
+plt.savefig("data/estacionalidad_mensual.png", dpi=300)
 
 if __name__ == "__main__":
     analizar_estacionalidad()

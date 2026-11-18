@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import polars as pl
 
 
@@ -47,9 +48,41 @@ def analizar_motivos_egreso():
         .sort("len", descending=True)
     )
 
-    print("--- Distribución de Motivos de Egreso (Cohorte F32/F33) ---")
+    print("Distribución de Motivos de Egreso (Cohorte F32/F33)")
     print(df_egresos)
 
+
+motivos = [
+    "Defunción",
+    "Fuga",
+    "Curación",
+    "Traslado",
+    "Otro",
+    "Alta voluntaria",
+    "Mejoría",
+]
+conteos = [4, 17, 37, 167, 422, 719, 9305]
+total = sum(conteos)
+porcentajes = [(c / total) * 100 for c in conteos]
+
+fig, ax = plt.subplots(figsize=(9.5, 4.8))
+bars = ax.barh(motivos, conteos, color="#1f4e78", height=0.6)
+
+for bar, c, p in zip(bars, conteos, porcentajes):
+    ax.text(
+        bar.get_width() + 140,
+        bar.get_y() + bar.get_height() / 2,
+        f"{c:,} ({p:.2f}%)",
+        va="center",
+        fontsize=9.5,
+    )
+
+ax.set_title("Distribución de motivos de egreso hospitalario (F32/F33) - 2024", fontsize=12)
+ax.set_xlabel("Número de egresos (n)")
+ax.set_xlim(0, 11000)
+ax.grid(axis="x", linestyle="--", alpha=0.5)
+plt.tight_layout()
+plt.savefig("data/motivos_egreso.png", dpi=300)
 
 if __name__ == "__main__":
     analizar_motivos_egreso()
