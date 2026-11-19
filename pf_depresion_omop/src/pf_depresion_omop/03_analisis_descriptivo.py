@@ -1,36 +1,26 @@
+from pathlib import Path
+
 import polars as pl
 
 
-def analisis_descriptivo():
-    # Cargar las tres tablas del modelo OMOP
-    df_person = pl.read_parquet("data/person.parquet")
-    df_visit = pl.read_parquet("data/visit_occurrence.parquet")
-    df_condition = pl.read_parquet("data/condition_occurrence.parquet")
-
-    # Filtrar los diagnósticos de depresión (F32 y F33)
+def procesar_cohorte_descriptiva(
+    df_person: pl.DataFrame,
+    df_visit: pl.DataFrame,
+    df_condition: pl.DataFrame,
+) -> dict[str, pl.DataFrame]:
+    """Unifica las tablas OMOP, aplica filtros clínicos finales y calcula resúmenes."""
     df_condition_dep = df_condition.filter(
         pl.col("condition_source_value").str.starts_with("F32")
         | pl.col("condition_source_value").str.starts_with("F33")
     )
 
-    # Unificar la información clínica usando el person_id
     df_cohorte = df_person.join(df_visit, on="person_id", how="inner").join(
         df_condition_dep, on="person_id", how="inner"
     )
 
-    print(f"Total de registros clínicos de depresión: {df_cohorte.height}\n")
-
-    # Calcular distribución demográfica por género
     dist_genero = df_cohorte.group_by("gender_concept_id").len()
-    print("Distribución por género (8507=Masculino, 8532=Femenino, 0=Desconocido):")
-    print(dist_genero)
-
-    # Calcular frecuencia de diagnósticos específicos
     dist_dx = df_cohorte.group_by("condition_source_value").len().sort("len", descending=True)
-    print("\nDistribución de diagnósticos CIE-10 (Episodios vs Trastorno Recurrente):")
-    print(dist_dx)
 
-    # Estadísticas de edad y días de estancia
     df_stats = df_cohorte.with_columns(
         [
             (2024 - pl.col("year_of_birth")).alias("edad_estimada"),
@@ -46,20 +36,49 @@ def analisis_descriptivo():
 
     # Filtro 2: estancia clínica (<= 30 días)
     df_estancia_larga = df_edad_ok.filter(pl.col("dias_estancia") > 30)
-    df_final = df_edad_ok.filter(pl.col("dias_estancia") <= 30)
+    df_final = df_edad_ok.filter((pl.col("dias_estancia") >= 0) & (pl.col("dias_estancia") <= 30))
 
-    # Exportar registros excluidos
-    df_edad_invalida.write_csv("data/registros_excluidos_edad.csv")
-    df_estancia_larga.write_csv("data/registros_estancia_prolongada.csv")
+    return {
+        "cohorte_bruta": df_cohorte,
+        "dist_genero": dist_genero,
+        "dist_dx": dist_dx,
+        "edad_invalida": df_edad_invalida,
+        "estancia_larga": df_estancia_larga,
+        "cohorte_final": df_final,
+    }
+
+
+def analisis_descriptivo(dir_datos: Path | str = "data") -> dict[str, pl.DataFrame]:
+    base = Path(dir_datos)
+    df_person = pl.read_parquet(base / "person.parquet")
+    df_visit = pl.read_parquet(base / "visit_occurrence.parquet")
+    df_condition = pl.read_parquet(base / "condition_occurrence.parquet")
+
+    resultados = procesar_cohorte_descriptiva(df_person, df_visit, df_condition)
+
+    print(f"Total de registros clínicos de depresión: {resultados['cohorte_bruta'].height}\n")
+    print("Distribución por género (8507=Masculino, 8532=Femenino, 0=Desconocido):")
+    print(resultados["dist_genero"])
+    print("\nDistribución de diagnósticos CIE-10 (Episodios vs Trastorno Recurrente):")
+    print(resultados["dist_dx"])
+
+    resultados["edad_invalida"].write_csv(base / "registros_excluidos_edad.csv")
+    resultados["estancia_larga"].write_csv(base / "registros_estancia_prolongada.csv")
 
     print("\nReporte de atrición final:")
-    print(f"Excluidos por edad irreal: {df_edad_invalida.height}")
-    print(f"Excluidos por cuidado residencial (>30 días): {df_estancia_larga.height}")
-    print(f"Cohorte clínica final: {df_final.height}")
+    print(f"Excluidos por edad irreal: {resultados['edad_invalida'].height}")
+    print(f"Excluidos por cuidado residencial (>30 días): {resultados['estancia_larga'].height}")
+    print(f"Cohorte clínica final: {resultados['cohorte_final'].height}")
 
     print("\nEstadísticas de días de estancia hospitalaria:")
-    print(df_final.select("dias_estancia").describe())
+    print(resultados["cohorte_final"].select("dias_estancia").describe())
+
+    return resultados
+
+
+# main.py
+main = analisis_descriptivo
 
 
 if __name__ == "__main__":
-    analisis_descriptivo()
+    main()

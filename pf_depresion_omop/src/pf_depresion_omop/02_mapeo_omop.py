@@ -1,3 +1,6 @@
+import importlib
+from pathlib import Path
+
 import polars as pl
 
 
@@ -97,15 +100,25 @@ def tabla_condition_occurrence(df_limpio: pl.DataFrame) -> pl.DataFrame:
     return condition
 
 
-if __name__ == "__main__":
-    df_raw = pl.read_csv("data/Egresos_Sectorial_2024.txt", separator="|")
+def main(
+    ruta_archivo: Path | str = "data/Egresos_Sectorial_2024.txt", dir_salida: Path | str = "data"
+) -> None:
+    mod_01 = importlib.import_module("pf_depresion_omop.01_limpieza_y_atricion")
+    lf = pl.scan_csv(ruta_archivo, separator="|", ignore_errors=True, infer_schema_length=1000)
+    df_limpio, _ = mod_01.limpiar_cohorte(lf)
 
-    df_person = tabla_person(df_raw)
-    df_visit = tabla_visit_occurrence(df_raw)
-    df_condition = tabla_condition_occurrence(df_raw)
+    df_person = tabla_person(df_limpio)
+    df_visit = tabla_visit_occurrence(df_limpio)
+    df_condition = tabla_condition_occurrence(df_limpio)
 
-    df_person.write_parquet("data/person.parquet")
-    df_visit.write_parquet("data/visit_occurrence.parquet")
-    df_condition.write_parquet("data/condition_occurrence.parquet")
+    out = Path(dir_salida)
+    out.mkdir(parents=True, exist_ok=True)
+    df_person.write_parquet(out / "person.parquet")
+    df_visit.write_parquet(out / "visit_occurrence.parquet")
+    df_condition.write_parquet(out / "condition_occurrence.parquet")
 
     print("Tablas OMOP guardadas exitosamente en la carpeta data/")
+
+
+if __name__ == "__main__":
+    main()
