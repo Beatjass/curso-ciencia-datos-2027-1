@@ -15,36 +15,54 @@ El proyecto está diseñado bajo una arquitectura modular y reproducible contene
 
 ```text
 pf_depresion_omop/
-├── docker-compose.yml                #Orquestación de contenedores (PostgreSQL y PgAdmin4)
-├── docs/                             #Documentación técnica y trazabilidad
-│   ├── atricion_cohorte.md           #Registro de criterios de exclusión
-│   └── bitacora.md                   #Bitácora metodológica por fases
-├── notebooks/                        #Exploración inicial y reporte
-│   ├── exploración.py                #Análisis exploratorio preliminar
-│   └── pf_dep_omop.docx              #Reporte académico
-├── pyproject.toml                    #Configuración de dependencias y pruebas con pytest
-├── README.md                         #Documentación principal del proyecto
+├── data/                             #Datos crudos (Egresos_Sectorial_2024.txt), tablas Parquet, CSVs de exclusión y gráficas (PNG)
+│   ├── Egresos_Sectorial_2024.txt
+│   ├── person.parquet
+│   ├── visit_occurrence.parquet
+│   ├── condition_occurrence.parquet
+│   ├── registros_excluidos_edad.csv
+│   ├── registros_estancia_prolongada.csv
+│   ├── distribucion_demografica.png
+│   ├── estacionalidad_mensual.png
+│   └── motivos_egreso.png
+├── docs/                             #Documentación clínica y bitácora del proyecto
+│   ├── atricion_cohorte.md
+│   └── bitacora.md
+├── notebooks/                        #Exploración inicial y reporte del proyecto
+│   ├── exploración.py
+│   └── pf_dep_omop.docx
 ├── src/
-│   └── pf_depresion_omop/            #Pipeline modular ETL y scripts analíticos
-│       ├── 01_limpieza_y_atricion.py
-│       ├── 02_mapeo_omop.py
-│       ├── 03_analisis_descriptivo.py
-│       ├── 04_visualizaciones.py
-│       ├── 05_pruebas_hipotesis.py
-│       ├── 06_comparativa_subtipos.py
-│       ├── 07_estacionalidad.py
-│       ├── 08_motivos_egreso.py
-│       ├── 09_carga_postgres.py
-│       └── 10_cohorte_depresion.sql
-└── tests/                            #Pruebas automatizadas (calidad y validación de fechas)
-    ├── test_calidad_datos.py
-    └── test_fechas.py
+│   └── pf_depresion_omop/
+│       ├── 01_limpieza_y_atricion.py #Filtrado CIE-10 (F32/F33), calidad demográfica y tabla de atrición
+│       ├── 02_mapeo_omop.py          #Mapeo relacional a tablas person, visit_occurrence y condition_occurrence
+│       ├── 03_analisis_descriptivo.py#Estadísticas descriptivas y depuración clínica (estancia <= 30 días)
+│       ├── 04_visualizaciones.py     #Distribución demográfica por edad y género
+│       ├── 05_pruebas_hipotesis.py   #Prueba U de Mann-Whitney de estancia hospitalaria por género
+│       ├── 06_comparativa_subtipos.py#Comparativa de estancia entre episodio único (F32) y recurrente (F33)
+│       ├── 07_estacionalidad.py      #Serie temporal mensual de ingresos hospitalarios (2024)
+│       ├── 08_motivos_egreso.py      #Distribución de desenlaces y motivos clínicos de egreso
+│       ├── 09_carga_postgres.py      #Ingesta de tablas OMOP Parquet hacia PostgreSQL
+│       └── 10_cohorte_depresion.sql  #Consultas SQL analíticas sobre la cohorte OMOP en PostgreSQL
+├── tests/                            #Suite de 23 pruebas unitarias y de integración con Pytest
+│   ├── test_calidad_datos.py
+│   ├── test_carga_postgres.py
+│   ├── test_descriptivo.py
+│   ├── test_estacionalidad.py
+│   ├── test_etl_omop.py
+│   ├── test_fechas.py
+│   ├── test_hipotesis.py
+│   ├── test_motivos_egreso.py
+│   ├── test_subtipos.py
+│   └── test_visualizaciones.py
+├── main.py                           #Orquestador CLI para ejecutar el pipeline completo o por etapas
+├── docker-compose.yml                #Servicios de PostgreSQL y PgAdmin4 con volúmenes persistentes
+└── pyproject.toml                    #Dependencias, configuración de Pytest y reglas de Ruff
 ```
 
 ## 3. Guía de instalación y ejecución
 
 ### Requisitos previos:
-- Python 3.10 o superior.
+- Python 3.14.
 - Docker instalado en el sistema local.
 
 ### Paso 1: Configurar el entorno virtual e instalar dependencias
@@ -101,7 +119,7 @@ Agregar nuevo servidor
         Name: OMOP CDM PostgreSQL
 
     Pestaña Connection:
-        Host name/address: (el valor que le quieras asignar)
+        Host name/address: omop_db
         Port: 5432
         Maintenance database: omop_cdm
         Username: (el valor de tu POSTGRES_USER)
@@ -109,31 +127,29 @@ Agregar nuevo servidor
 ```
 
 
-### Paso 4: Ejecutar el Pipeline ETL (Scripts 01 al 09)
-Ejecuta secuencialmente los scripts de procesamiento y carga:
+### Paso 4: Ejecutar el Pipeline ETL (`main.py`)
+
+El proyecto cuenta con un orquestador CLI (`main.py`) que permite ejecutar todo el flujo ETL y analítico de manera secuencial o parametrizada sin necesidad de invocar cada script manualmente:
 
 ```bash
-python src/pf_depresion_omop/01_limpieza_y_atricion.py
-python src/pf_depresion_omop/02_mapeo_omop.py
-python src/pf_depresion_omop/03_analisis_descriptivo.py
-python src/pf_depresion_omop/04_visualizaciones.py
-python src/pf_depresion_omop/05_pruebas_hipotesis.py
-python src/pf_depresion_omop/06_comparativa_subtipos.py
-python src/pf_depresion_omop/07_estacionalidad.py
-python src/pf_depresion_omop/08_motivos_egreso.py
-python src/pf_depresion_omop/09_carga_postgres.py
+#Ver los pasos disponibles y sus alias
+python main.py --listar
+
+#Ejecutar el pipeline completo (pasos 01 al 09)
+python main.py
+
 ```
 
 
 ## 4. Control de calidad y pruebas unitarias
 
-Para verificar la integridad de las transformaciones y la consistencia temporal de los registros antes de la persistencia relacional, el proyecto incluye pruebas automatizadas:
+Para verificar la integridad de las transformaciones, el mapeo relacional OMOP CDM, la consistencia temporal, los cálculos estadísticos y la ingesta a PostgreSQL sin depender de archivos externos ni de una conexión activa a base de datos, el proyecto incluye una suite de pruebas automatizadas:
 
 ```bash
-pytest
+pytest -v
 ```
 
-**Resultado esperado:** 4 pruebas exitosas verificando la limpieza de atípicos y validación de rangos temporales.
+**Resultado esperado:** 23 pruebas unitarias y de integración exitosas verificando reglas de atrición, manejo de valores nulos, rangos temporales, integridad referencial OMOP, pruebas de hipótesis, generación de visualizaciones y carga de datos.
 
 ## 5. Caracterización de la Cohorte de Depresión (F32 y F33)
 
