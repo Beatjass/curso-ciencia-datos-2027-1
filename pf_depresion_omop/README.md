@@ -42,7 +42,8 @@ pf_depresion_omop/
 │       ├── 07_estacionalidad.py      #Serie temporal mensual de ingresos hospitalarios (2024)
 │       ├── 08_motivos_egreso.py      #Distribución de desenlaces y motivos clínicos de egreso
 │       ├── 09_carga_postgres.py      #Ingesta de tablas OMOP Parquet hacia PostgreSQL
-│       └── 10_cohorte_depresion.sql  #Consultas SQL analíticas sobre la cohorte OMOP en PostgreSQL
+│       ├── 10_cohorte_depresion.sql  #Consultas SQL analíticas sobre la cohorte OMOP en PostgreSQL
+│       └── utils_cohorte.py          #Funciones compartidas de unión y filtrado clínico de la cohorte (DRY)
 ├── tests/                            #Suite de 23 pruebas unitarias y de integración con Pytest
 │   ├── test_calidad_datos.py
 │   ├── test_carga_postgres.py
@@ -137,6 +138,13 @@ python main.py --listar
 
 #Ejecutar el pipeline completo (pasos 01 al 09)
 python main.py
+
+#Ejecutar pasos específicos por número o alias
+python main.py --pasos 01 02 09
+python main.py --pasos limpieza mapeo egresos
+
+#Ejecutar un rango continuo de pasos
+python main.py --desde 03 --hasta 08
 
 ```
 
