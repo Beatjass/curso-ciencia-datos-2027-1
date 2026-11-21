@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pf_depresion_omop"
-version = "0.1.0"
+version = "0.9.0"
 description = "Pipeline ETL para mapear egresos hospitalarios por depresión a OMOP CDM"
 requires-python = ">=3.0"
 dependencies = [

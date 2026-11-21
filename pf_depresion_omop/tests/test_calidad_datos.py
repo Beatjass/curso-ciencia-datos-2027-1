@@ -1,4 +1,9 @@
+from pathlib import Path
+
 import polars as pl
+import pytest
+
+from pf_depresion_omop.utils_cohorte import construir_cohorte_clinica
 
 
 def test_calidad_fechas_visita():
@@ -31,3 +36,33 @@ def test_conceptos_estandar_omop():
     assert (
         conceptos_distintos.is_empty()
     ), "Error: Hay identificadores de concepto de visita ajenos a 9201."
+
+
+def test_consulta_sql_cohorte_suma_10671():
+    """Valida que 10_cohorte_depresion.sql aplique el límite de 30 días y sume 10,671."""
+    sql_path = Path("src/pf_depresion_omop/10_cohorte_depresion.sql")
+    assert sql_path.exists(), "Falta el archivo 10_cohorte_depresion.sql"
+
+    sql_text = sql_path.read_text(encoding="utf-8")
+    assert "JOIN visit_occurrence v ON c.person_id = v.person_id" in sql_text
+    assert "<= 30" in sql_text
+    assert "2024 - p.year_of_birth" in sql_text
+
+    ruta_person = Path("data/person.parquet")
+    if not ruta_person.exists():
+        pytest.skip("Datos Parquet locales no disponibles en entorno CI.")
+
+    df_person = pl.read_parquet("data/person.parquet")
+    df_visit = pl.read_parquet("data/visit_occurrence.parquet")
+    df_condition = pl.read_parquet("data/condition_occurrence.parquet")
+
+    df_cohorte = construir_cohorte_clinica(df_person, df_visit, df_condition)
+    df_sql_simulado = df_cohorte.group_by(["condition_source_value", "gender_concept_id"]).agg(
+        pl.col("person_id").n_unique().alias("total_pacientes")
+    )
+
+    assert df_sql_simulado["total_pacientes"].sum() == 10671
+    hombres = df_sql_simulado.filter(pl.col("gender_concept_id") == 8507)["total_pacientes"].sum()
+    mujeres = df_sql_simulado.filter(pl.col("gender_concept_id") == 8532)["total_pacientes"].sum()
+    assert hombres == 2757
+    assert mujeres == 7914
