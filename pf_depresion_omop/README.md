@@ -44,7 +44,7 @@ pf_depresion_omop/
 │       ├── 09_carga_postgres.py      #Ingesta de tablas OMOP Parquet hacia PostgreSQL
 │       ├── 10_cohorte_depresion.sql  #Consultas SQL analíticas sobre la cohorte OMOP en PostgreSQL
 │       └── utils_cohorte.py          #Funciones compartidas de unión y filtrado clínico de la cohorte (DRY)
-├── tests/                            #Suite de 23 pruebas unitarias y de integración con Pytest
+├── tests/                            #Suite de 24 pruebas unitarias y de integración con Pytest
 │   ├── test_calidad_datos.py
 │   ├── test_carga_postgres.py
 │   ├── test_descriptivo.py
@@ -63,7 +63,7 @@ pf_depresion_omop/
 ## 3. Guía de instalación y ejecución
 
 ### Requisitos previos:
-- Python 3.14.
+- Python 3.10 o superior.
 - Docker instalado en el sistema local.
 
 ### Paso 1: Configurar el entorno virtual e instalar dependencias
@@ -90,10 +90,12 @@ pip install -e .
 
 Este proyecto utiliza Docker Compose para orquestar PostgreSQL (con el modelo OMOP CDM) y PgAdmin4.
 
-Configuración de variables de entorno
-Crea un archivo `.env` en la raíz del proyecto basándote en la plantilla `.env.example`:
+Configuración de variables de entorno:
+Crea un archivo `.env` en la raíz del proyecto basándote en la plantilla `.env.example` y asigna tus credenciales (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB=omop_cdm`, así como el correo y contraseña de PgAdmin4):
+
 ```bash
 cp .env.example .env
+# Edita .env con tus credenciales antes de continuar
 ```
 
 Ejecución de Contenedores
@@ -133,6 +135,8 @@ Agregar nuevo servidor
 El proyecto cuenta con un orquestador CLI (`main.py`) que permite ejecutar todo el flujo ETL y analítico de manera secuencial o parametrizada sin necesidad de invocar cada script manualmente:
 
 ```bash
+#Tener el archivo Egresos_Sectorial_2024.txt en la carpeta /data antes de ejecutar main.py
+
 #Ver los pasos disponibles y sus alias
 python main.py --listar
 
@@ -157,7 +161,7 @@ Para verificar la integridad de las transformaciones, el mapeo relacional OMOP C
 pytest -v
 ```
 
-**Resultado esperado:** 23 pruebas unitarias y de integración exitosas verificando reglas de atrición, manejo de valores nulos, rangos temporales, integridad referencial OMOP, pruebas de hipótesis, generación de visualizaciones y carga de datos.
+**Resultado esperado:** 24 pruebas unitarias y de integración exitosas verificando reglas de atrición, manejo de valores nulos, rangos temporales, integridad referencial OMOP, pruebas de hipótesis, generación de visualizaciones y carga de datos.
 
 ## 5. Caracterización de la Cohorte de Depresión (F32 y F33)
 
@@ -170,4 +174,4 @@ La extracción final sobre la base relacional OMOP CDM (`10_cohorte_depresion.sq
 
 ## 6. Licencia y créditos
 
-Desarrollado como proyecto aplicada en ingeniería de datos en salud y modelos observacionales estandarizados (OMOP CDM).
+Los datos provienen de los egresos hospitalarios 2024 de la Dirección General de Información en Salud (Secretaría de Salud), publicados como datos abiertos. Proyecto aplicado de ingeniería de datos en salud y modelos observacionales estandarizados (OMOP CDM).
