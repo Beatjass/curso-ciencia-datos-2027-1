@@ -2,6 +2,13 @@ from pathlib import Path
 
 import polars as pl
 
+from pf_depresion_omop.utils_cohorte import (
+    ANIO_REFERENCIA,
+    EDAD_MAXIMA,
+    ESTANCIA_MAXIMA_DIAS,
+    construir_cohorte_clinica,
+)
+
 
 def procesar_cohorte_descriptiva(
     df_person: pl.DataFrame,
@@ -23,20 +30,21 @@ def procesar_cohorte_descriptiva(
 
     df_stats = df_cohorte.with_columns(
         [
-            (2024 - pl.col("year_of_birth")).alias("edad_estimada"),
+            (ANIO_REFERENCIA - pl.col("year_of_birth")).alias("edad_estimada"),
             (pl.col("visit_end_date") - pl.col("visit_start_date"))
             .dt.total_days()
             .alias("dias_estancia"),
         ]
     )
 
-    # Filtro 1: edad irreal (<= 120 años)
-    df_edad_invalida = df_stats.filter(pl.col("edad_estimada") > 120)
-    df_edad_ok = df_stats.filter(pl.col("edad_estimada") <= 120)
+    # Auditoría de registros excluidos por criterios clínicos (edad irreal y estancia prolongada)
+    df_edad_invalida = df_stats.filter(pl.col("edad_estimada") > EDAD_MAXIMA)
+    df_estancia_larga = df_stats.filter(
+        (pl.col("edad_estimada") <= EDAD_MAXIMA) & (pl.col("dias_estancia") > ESTANCIA_MAXIMA_DIAS)
+    )
 
-    # Filtro 2: estancia clínica (<= 30 días)
-    df_estancia_larga = df_edad_ok.filter(pl.col("dias_estancia") > 30)
-    df_final = df_edad_ok.filter((pl.col("dias_estancia") >= 0) & (pl.col("dias_estancia") <= 30))
+    # Cohorte clínica final centralizada
+    df_final = construir_cohorte_clinica(df_person, df_visit, df_condition)
 
     return {
         "cohorte_bruta": df_cohorte,
@@ -78,7 +86,3 @@ def analisis_descriptivo(dir_datos: Path | str = "data") -> dict[str, pl.DataFra
 
 # main.py
 main = analisis_descriptivo
-
-
-if __name__ == "__main__":
-    main()

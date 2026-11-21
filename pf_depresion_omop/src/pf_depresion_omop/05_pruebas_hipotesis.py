@@ -3,6 +3,11 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
+try:
+    from pf_depresion_omop.utils_cohorte import construir_cohorte_clinica
+except ImportError:
+    from utils_cohorte import construir_cohorte_clinica  # type: ignore[no-redef]
+
 
 def calcular_mann_whitney_estancia(
     df_person: pl.DataFrame,
@@ -10,27 +15,7 @@ def calcular_mann_whitney_estancia(
     df_condition: pl.DataFrame,
 ) -> dict[str, float | int | bool]:
     """Reconstruye la cohorte depurada y ejecuta la prueba U de Mann-Whitney por género."""
-    df_final = (
-        df_person.join(df_visit, on="person_id", how="inner")
-        .join(df_condition, on="person_id", how="inner")
-        .with_columns(
-            [
-                (2024 - pl.col("year_of_birth")).alias("edad_estimada"),
-                (pl.col("visit_end_date") - pl.col("visit_start_date"))
-                .dt.total_days()
-                .alias("dias_estancia"),
-            ]
-        )
-        .filter(
-            (
-                pl.col("condition_source_value").str.starts_with("F32")
-                | pl.col("condition_source_value").str.starts_with("F33")
-            )
-            & (pl.col("edad_estimada") <= 120)
-            & (pl.col("dias_estancia") >= 0)
-            & (pl.col("dias_estancia") <= 30)
-        )
-    )
+    df_final = construir_cohorte_clinica(df_person, df_visit, df_condition)
 
     hombres = (
         df_final.filter(pl.col("gender_concept_id") == 8507).get_column("dias_estancia").to_numpy()
@@ -83,14 +68,14 @@ def prueba_hipotesis_estancia(dir_datos: Path | str = "data") -> dict[str, float
         )
     else:
         print(
-            "\nConclusión: No se rechaza H0. No hay evidencia de "
-            "diferencia estadísticamente significativa entre géneros."
+            "\nConclusión: No se rechaza H0. No hay diferencia "
+            "estadísticamente significativa entre géneros."
         )
 
     return res
 
 
-# ain.py
+# main.py
 main = prueba_hipotesis_estancia
 
 

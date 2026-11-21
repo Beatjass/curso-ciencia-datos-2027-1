@@ -5,6 +5,11 @@ import pandas as pd
 import polars as pl
 import seaborn as sns
 
+try:
+    from pf_depresion_omop.utils_cohorte import construir_cohorte_clinica
+except ImportError:
+    from utils_cohorte import construir_cohorte_clinica  # type: ignore[no-redef]
+
 
 def preparar_datos_graficas(
     df_person: pl.DataFrame,
@@ -12,27 +17,7 @@ def preparar_datos_graficas(
     df_condition: pl.DataFrame,
 ) -> pd.DataFrame:
     """Filtra la cohorte clínica final y prepara el DataFrame para visualización."""
-    df_cohorte = df_person.join(df_visit, on="person_id", how="inner").join(
-        df_condition, on="person_id", how="inner"
-    )
-
-    df_final = df_cohorte.with_columns(
-        [
-            (2024 - pl.col("year_of_birth")).alias("edad_estimada"),
-            (pl.col("visit_end_date") - pl.col("visit_start_date"))
-            .dt.total_days()
-            .alias("dias_estancia"),
-        ]
-    ).filter(
-        (
-            pl.col("condition_source_value").str.starts_with("F32")
-            | pl.col("condition_source_value").str.starts_with("F33")
-        )
-        & (pl.col("edad_estimada") <= 120)
-        & (pl.col("dias_estancia") >= 0)
-        & (pl.col("dias_estancia") <= 30)
-    )
-
+    df_final = construir_cohorte_clinica(df_person, df_visit, df_condition)
     df_pd = df_final.select(["edad_estimada", "dias_estancia", "gender_concept_id"]).to_pandas()
     df_pd["genero"] = df_pd["gender_concept_id"].map({8507: "Masculino", 8532: "Femenino"})
     return df_pd

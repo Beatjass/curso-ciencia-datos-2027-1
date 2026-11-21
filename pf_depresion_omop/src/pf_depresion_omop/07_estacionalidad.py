@@ -3,6 +3,11 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import polars as pl
 
+try:
+    from pf_depresion_omop.utils_cohorte import construir_cohorte_clinica
+except ImportError:
+    from utils_cohorte import construir_cohorte_clinica  # type: ignore[no-redef]
+
 NOMBRES_MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
 
@@ -12,27 +17,8 @@ def calcular_estacionalidad_mensual(
     df_condition: pl.DataFrame,
 ) -> pl.DataFrame:
     """Calcula el conteo de ingresos hospitalarios por mes (1 a 12) sobre la cohorte depurada."""
-    df_cohorte = (
-        df_person.join(df_visit, on="person_id", how="inner")
-        .join(df_condition, on="person_id", how="inner")
-        .with_columns(
-            [
-                (2024 - pl.col("year_of_birth")).alias("edad_estimada"),
-                (pl.col("visit_end_date") - pl.col("visit_start_date"))
-                .dt.total_days()
-                .alias("dias_estancia"),
-                pl.col("visit_start_date").dt.month().alias("mes"),
-            ]
-        )
-        .filter(
-            (
-                pl.col("condition_source_value").str.starts_with("F32")
-                | pl.col("condition_source_value").str.starts_with("F33")
-            )
-            & (pl.col("edad_estimada") <= 120)
-            & (pl.col("dias_estancia") >= 0)
-            & (pl.col("dias_estancia") <= 30)
-        )
+    df_cohorte = construir_cohorte_clinica(df_person, df_visit, df_condition).with_columns(
+        pl.col("visit_start_date").dt.month().alias("mes")
     )
 
     conteos_mes = df_cohorte.group_by("mes").len()

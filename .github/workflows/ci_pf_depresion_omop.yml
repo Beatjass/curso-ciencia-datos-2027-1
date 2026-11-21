@@ -1,0 +1,44 @@
+name: CI - pf_depresion_omop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pf_depresion_omop/**"
+      - ".github/workflows/ci_pf_depresion_omop.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "pf_depresion_omop/**"
+
+defaults:
+  run:
+    working-directory: pf_depresion_omop
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "pf_depresion_omop/pyproject.toml"
+
+      - name: Instalar proyecto y herramientas de desarrollo
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest ruff
+
+      - name: Verificar estilo y formato con Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Ejecutar suite de 23 pruebas unitarias con Pytest
+        run: pytest -v
